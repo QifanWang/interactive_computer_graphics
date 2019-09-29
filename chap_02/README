@@ -15,3 +15,6 @@ example5.cpp: Marching squares program. Equivalent to contour.c in 5E.
 
 
 From: http://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SIXTH_EDITION/CODE/
+
+example4c.cpp: based on example4b.cpp, simple rotation of triangle.
+by ezio
