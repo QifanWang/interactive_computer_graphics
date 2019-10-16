@@ -4,7 +4,8 @@ example1.cpp: display of cube using two triangles per face through a vertex list
 
 example2.cpp: rotates cube from example 1 by rotating vertices in the application. Mouse selects axis of rotation. Idle function spins cube about selected axis. Similar to cube.c in 5E.
 
-example6.cpp: In this version, we send the angles to the vertex shader and compute the rotation matrix there. Note that trigonometric functions in the application use radians whereas the same functions in the shaders use degrees.
+example3.cpp: based on example2.cpp , adding translate and scale function.
 
+example6.cpp: In this version, we send the angles to the vertex shader and compute the rotation matrix there. Note that trigonometric functions in the application use radians whereas the same functions in the shaders use degrees.
 
 
