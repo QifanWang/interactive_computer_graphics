@@ -64,24 +64,41 @@ GLfloat  incrementScale = 1.0;
 
 // quad generates two triangles for each face and assigns colors
 //    to the vertices
+//  quad 函数为立方体一个面生成两个三角型，并分配颜色，同时分配贴图坐标
 int Index = 0;
 
 void
 quad( int a, int b, int c, int d )
 {
     colors[Index] = vertex_colors[a]; points[Index] = vertices[a];
-
+    tex_coords[Index] = vec2(0.0 , 0.0);
     Index++;
-    colors[Index] = vertex_colors[b]; points[Index] = vertices[b]; Index++;
-    colors[Index] = vertex_colors[c]; points[Index] = vertices[c]; Index++;
-    colors[Index] = vertex_colors[a]; points[Index] = vertices[a]; Index++;
-    colors[Index] = vertex_colors[c]; points[Index] = vertices[c]; Index++;
-    colors[Index] = vertex_colors[d]; points[Index] = vertices[d]; Index++;
+
+    colors[Index] = vertex_colors[b]; points[Index] = vertices[b];
+    tex_coords[Index] = vec2(0.0 , 1.0);
+    Index++;
+
+    colors[Index] = vertex_colors[c]; points[Index] = vertices[c];
+    tex_coords[Index] = vec2(1.0 , 1.0);
+    Index++;
+
+    colors[Index] = vertex_colors[a]; points[Index] = vertices[a];
+    tex_coords[Index] = vec2(0.0 , 0.0);
+    Index++;
+
+    colors[Index] = vertex_colors[c]; points[Index] = vertices[c];
+    tex_coords[Index] = vec2(1.0 , 1.0);
+    Index++;
+
+    colors[Index] = vertex_colors[d]; points[Index] = vertices[d];
+    tex_coords[Index] = vec2(1.0 , 0.0);
+    Index++;
 }
 
 //----------------------------------------------------------------------------
 
 // generate 12 triangles: 36 vertices and 36 colors
+// 对应6个面
 void
 colorcube()
 {
@@ -101,6 +118,30 @@ init()
 {
     colorcube();
 
+    // 生成一个贴图图案
+    for(int i=0;i<TexturesSize;++i){
+        for(int j = 0;j<TexturesSize;++j){
+            GLubyte c = (((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255;
+            image[i][j][0] = c;
+            image[i][j][1] = c;
+            image[i][j][2] = c;
+        }
+    }
+
+    // 初始化纹理对象
+    glGenTextures( 1 , textures);
+
+    glBindTexture( GL_TEXTURE_2D, textures[0] );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, TexturesSize, TexturesSize, 0,
+                  GL_RGB, GL_UNSIGNED_BYTE, image );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, textures[0] );
+
     // Create a vertex array object
     GLuint vao;
     glGenVertexArrays( 1, &vao );
@@ -110,25 +151,50 @@ init()
     GLuint buffer;
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors),
+    glBufferData( GL_ARRAY_BUFFER,
+                  sizeof(points) + sizeof(colors) + sizeof(tex_coords),
                   NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+
+    // 分配一个偏移量 ， 以便记录数据在顶点数据缓冲区的位置
+    GLuint offset = 0;
+    glBufferSubData( GL_ARRAY_BUFFER, offset, sizeof(points), points );
+    offset += sizeof(points);
+
+    glBufferSubData( GL_ARRAY_BUFFER, offset, sizeof(colors), colors );
+    offset += sizeof(colors);
+
+    glBufferSubData( GL_ARRAY_BUFFER, offset, sizeof(tex_coords), tex_coords);
 
     // Load shaders and use the resulting shader program
-    GLuint program = InitShader( "vshader33.glsl", "fshader33.glsl" );
+    GLuint program = InitShader( "vshader34.glsl", "fshader34.glsl" );
     glUseProgram( program );
 
     // set up vertex arrays
+    offset = 0;
     GLuint vPosition = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( vPosition );
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(0) );
+                           BUFFER_OFFSET(offset) );
+    offset += sizeof(points);
 
     GLuint vColor = glGetAttribLocation( program, "vColor" );
     glEnableVertexAttribArray( vColor );
     glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(points)) );
+                           BUFFER_OFFSET(offset) );
+    offset += sizeof(colors);
+
+    GLuint vTexCoord = glGetAttribLocation( program, "vTexCoord" );
+    glEnableVertexAttribArray( vTexCoord );
+    glVertexAttribPointer( vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(offset) );
+
+    // Set the value of the fragment shader texture sampler variable
+    //   ("texture") to the the appropriate texture unit. In this case,
+    //   zero, for GL_TEXTURE0 which was previously set by calling
+    //   glActiveTexture().
+    // 将片元着色器中的纹理采样器变量("texture")的数值设为对应的纹理单元
+    // 因之前有    glActiveTexture( GL_TEXTURE0 );   故将其设为0
+    glUniform1i( glGetUniformLocation(program, "texture"), 0);
 
     glEnable( GL_DEPTH_TEST );
     glClearColor( 1.0, 1.0, 1.0, 1.0 );

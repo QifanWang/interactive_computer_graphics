@@ -6,8 +6,10 @@
 //   as the default projetion.
 // Add translating , scaling and rotating function.
 // 再增加纹理贴图
+// 增加bmp文件贴图
 
 #include "Angel.h"
+#include "stb_image.h"
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -16,8 +18,9 @@ const int NumTriangles = 12;// 6面 , 每面2个三角形
 const int NumVertices = 3 * NumTriangles;
 const int TexturesSize = 64;
 
-//纹理对象 与 存纹理对象的数组
-GLuint textures[1];
+//纹理对象(2个) textures[0]为黑白棋盘纹理 [1]为jpg图像纹理
+//与 存纹理对象0的数组
+GLuint textures[2];
 GLubyte image[TexturesSize][TexturesSize][3];
 
 //存顶点数据的数组
@@ -62,6 +65,10 @@ GLfloat  incrementScale = 1.0;
 
 //----------------------------------------------------------------------------
 
+
+
+//----------------------------------------------------------------------------
+
 // quad generates two triangles for each face and assigns colors
 //    to the vertices
 //  quad 函数为立方体一个面生成两个三角型，并分配颜色，同时分配贴图坐标
@@ -75,7 +82,7 @@ quad( int a, int b, int c, int d )
     Index++;
 
     colors[Index] = vertex_colors[b]; points[Index] = vertices[b];
-    tex_coords[Index] = vec2(0.0 , 1.0);
+    tex_coords[Index] = vec2(1.0 , 0.0);
     Index++;
 
     colors[Index] = vertex_colors[c]; points[Index] = vertices[c];
@@ -91,7 +98,7 @@ quad( int a, int b, int c, int d )
     Index++;
 
     colors[Index] = vertex_colors[d]; points[Index] = vertices[d];
-    tex_coords[Index] = vec2(1.0 , 0.0);
+    tex_coords[Index] = vec2(0.0 , 1.0);
     Index++;
 }
 
@@ -129,8 +136,9 @@ init()
     }
 
     // 初始化纹理对象
-    glGenTextures( 1 , textures);
+    glGenTextures( 2 , textures);
 
+    // 纹理对象[0]
     glBindTexture( GL_TEXTURE_2D, textures[0] );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, TexturesSize, TexturesSize, 0,
                   GL_RGB, GL_UNSIGNED_BYTE, image );
@@ -138,6 +146,27 @@ init()
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+
+    // 纹理对象[1]
+    glBindTexture( GL_TEXTURE_2D, textures[1] );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("whu.jpg", &width,
+                                    &height, &nrChannels,0);
+    if(data){
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                        GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap( GL_TEXTURE_2D );
+    }else{
+        std::cout << "Failed to load texture from whu.jpg " << std::endl;
+    }
+    stbi_image_free(data);
+
+    //LoadGL
 
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, textures[0] );
@@ -166,7 +195,7 @@ init()
     glBufferSubData( GL_ARRAY_BUFFER, offset, sizeof(tex_coords), tex_coords);
 
     // Load shaders and use the resulting shader program
-    GLuint program = InitShader( "vshader34.glsl", "fshader34.glsl" );
+    GLuint program = InitShader( "vshader35.glsl", "fshader35.glsl" );
     glUseProgram( program );
 
     // set up vertex arrays
@@ -271,6 +300,12 @@ keyboard( unsigned char key, int x, int y )
             break;
         case 'g': case 'G':// Zoom out
             incrementScale  *= 0.99;
+            break;
+        case '0':
+            glBindTexture( GL_TEXTURE_2D, textures[0]);
+            break;
+        case '1':
+            glBindTexture( GL_TEXTURE_2D, textures[1]);
             break;
     }
 }

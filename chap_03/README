@@ -6,6 +6,10 @@ example2.cpp: rotates cube from example 1 by rotating vertices in the applicatio
 
 example3.cpp: based on example2.cpp , adding translate and scale function.
 
+example4.cpp: based on example3.cpp , adding texture.
+
+example5.cpp: based on example4.cpp , adding bmp image as texture.
+
 example6.cpp: In this version, we send the angles to the vertex shader and compute the rotation matrix there. Note that trigonometric functions in the application use radians whereas the same functions in the shaders use degrees.
 
 

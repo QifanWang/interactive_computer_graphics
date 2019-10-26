@@ -1,11 +1,14 @@
 #version 150
 
 in  vec4 color;
+in  vec2 texCoord;
+
 out vec4 fColor;
 
-void main() 
+uniform sampler2D texture;
+
+void main()
 { 
-    fColor = color;
-    
+    fColor = color * texture2D( texture , texCoord);
 } 
 

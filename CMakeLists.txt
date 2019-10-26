@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 2.8.0)
 project(interactive_computer_graphics)
 
 option(BUILD_CHAP_02 "Build Chap 02 subproject." OFF)
-option(BUILD_CHAP_03 "Build Chap 03 subproject." OFF)
-option(BUILD_CHAP_04 "Build Chap 04 subproject." ON)
+option(BUILD_CHAP_03 "Build Chap 03 subproject." ON)
+option(BUILD_CHAP_04 "Build Chap 04 subproject." OFF)
 option(BUILD_CHAP_05 "Build Chap 05 subproject." OFF)
 option(BUILD_CHAP_07 "Build Chap 07 subproject." OFF)
 option(BUILD_CHAP_08 "Build Chap 08 subproject." OFF)
@@ -15,8 +15,10 @@ option(BUILD_CHAP_10 "Build Chap 10 subproject." OFF)
 option(BUILD_APPEN_A "Build Appendix A subproject." OFF)
 
 ADD_LIBRARY(GfxModule
-    ${CMAKE_SOURCE_DIR}/common/InitShader.cpp
-)
+        ${CMAKE_SOURCE_DIR}/common/InitShader.cpp
+        ${CMAKE_SOURCE_DIR}/common/stb_image.cpp)
+#ADD_LIBRARY(GfxModule
+#    ${CMAKE_SOURCE_DIR}/common/stb_image.cpp)
 
 target_link_libraries(GfxModule -lglut)
 target_link_libraries(GfxModule -lGLEW)
@@ -37,6 +39,8 @@ if(BUILD_CHAP_03)
     add_subdirectory(chap_03/LINUX_VERSIONS/example1)
     add_subdirectory(chap_03/LINUX_VERSIONS/example2)
     add_subdirectory(chap_03/LINUX_VERSIONS/example3)
+    add_subdirectory(chap_03/LINUX_VERSIONS/example4)
+    add_subdirectory(chap_03/LINUX_VERSIONS/example5)
     add_subdirectory(chap_03/LINUX_VERSIONS/example6)
 endif()
 
